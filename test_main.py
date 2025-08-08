@@ -1,8 +1,10 @@
-import pytest
-import main
-import types
 import json
 import pathlib
+import types
+
+import pytest
+
+import main
 
 
 class MockResponse:
