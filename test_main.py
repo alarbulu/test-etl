@@ -8,7 +8,8 @@ import main
 
 
 class MockResponse:
-    def __init__(self, json_data):
+    def __init__(self, json_data, next_url=None):
+        self.links = {"next": {"url": next_url}} if next_url else {}
         self.json_data = json_data
 
     def __str__(self):
@@ -41,7 +42,9 @@ def workflow_run_template():
 
 @pytest.fixture
 def repos_pages():
-    page_1 = MockResponse([{"name": "active_repo"}, {"name": "abandoned_repo"}])
+    page_1 = MockResponse(
+        [{"name": "active_repo"}, {"name": "abandoned_repo"}], next_url="repos?page=2"
+    )
     page_2 = MockResponse([{"name": "empty_repo"}])
     return iter([page_1, page_2])
 
@@ -54,7 +57,10 @@ def active_repo_workflow_run_pages(workflow_run_template):
     run_3 = template | {"id": 3}
 
     pages = [
-        MockResponse({"total_count": 3, "workflow_runs": [run_1, run_2]}),
+        MockResponse(
+            {"total_count": 3, "workflow_runs": [run_1, run_2]},
+            next_url="active_repo/runs?page=2",
+        ),
         MockResponse({"total_count": 3, "workflow_runs": [run_3]}),
     ]
     return iter(pages)
