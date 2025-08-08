@@ -12,6 +12,10 @@ class MockResponse:
     def __str__(self):
         return json.dumps(self.json_data)
 
+    @property
+    def text(self):
+        return self.__str__()
+
     def json(self):
         return self.json_data
 
@@ -70,6 +74,25 @@ def test_get_workflow_runs(active_repo_workflow_run_pages):
     assert run_1["id"] == 1
     assert run_2["id"] == 2
     assert run_3["id"] == 3
+
+
+def test_write_pages():
+    mock_file_system = {}
+
+    def mock_write(obj, f_path):
+        mock_file_system[str(f_path)] = obj
+
+    pages = iter(
+        [
+            MockResponse(["data_1", "data_2"]),
+            MockResponse(["data_3", "data_4"]),
+        ]
+    )
+    main.write_pages(pages, pathlib.Path("test_dir"), mock_write)
+    assert mock_file_system == {
+        "test_dir/pages/1.json": '["data_1", "data_2"]',
+        "test_dir/pages/2.json": '["data_3", "data_4"]',
+    }
 
 
 def test_write_workflow_run(workflow_run_template):
