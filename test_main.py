@@ -1,6 +1,18 @@
 import pytest
 import main
 import types
+import json
+
+
+class MockResponse:
+    def __init__(self, json_data):
+        self.json_data = json_data
+
+    def __str__(self):
+        return json.dumps(self.json_data)
+
+    def json(self):
+        return self.json_data
 
 
 @pytest.fixture
@@ -22,8 +34,8 @@ def workflow_run_template():
 
 @pytest.fixture
 def repos_pages():
-    page_1 = [{"name": "active_repo"}, {"name": "abandoned_repo"}]
-    page_2 = [{"name": "empty_repo"}]
+    page_1 = MockResponse([{"name": "active_repo"}, {"name": "abandoned_repo"}])
+    page_2 = MockResponse([{"name": "empty_repo"}])
     return iter([page_1, page_2])
 
 
@@ -35,8 +47,8 @@ def active_repo_workflow_run_pages(workflow_run_template):
     run_3 = template | {"id": 3}
 
     pages = [
-        {"total_count": 3, "workflow_runs": [run_1, run_2]},
-        {"total_count": 3, "workflow_runs": [run_3]},
+        MockResponse({"total_count": 3, "workflow_runs": [run_1, run_2]}),
+        MockResponse({"total_count": 3, "workflow_runs": [run_3]}),
     ]
     return iter(pages)
 
