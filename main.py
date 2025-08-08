@@ -1,5 +1,9 @@
+def get_repo_names(repos_pages):
+    pass
+
+
 def main():
-    print("Hello from template!")
+    pass
 
 
 if __name__ == "__main__":
