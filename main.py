@@ -3,7 +3,7 @@ def get_repo_names(repos_pages):
 
 
 def get_workflow_runs(workflow_runs_pages):
-    pass
+    return (run for page in workflow_runs_pages for run in page["workflow_runs"])
 
 
 def main():
