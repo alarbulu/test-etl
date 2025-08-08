@@ -2,6 +2,7 @@ import pytest
 import main
 import types
 import json
+import pathlib
 
 
 class MockResponse:
@@ -69,3 +70,15 @@ def test_get_workflow_runs(active_repo_workflow_run_pages):
     assert run_1["id"] == 1
     assert run_2["id"] == 2
     assert run_3["id"] == 3
+
+
+def test_write_workflow_run(workflow_run_template):
+    mock_file_system = {}
+
+    def mock_writer(obj, f_path):
+        mock_file_system[f_path] = obj
+
+    run = workflow_run_template | {"id": 1, "repository": {"name": "test_repo"}}
+    main.write_workflow_run(run, pathlib.Path("test_dir"), mock_writer)
+
+    assert mock_file_system[pathlib.Path("test_dir/runs/1.json")] == run
