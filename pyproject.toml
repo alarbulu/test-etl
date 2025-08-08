@@ -1,0 +1,17 @@
+[project]
+name = "template"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "coverage>=7.10.1",
+    "pytest>=8.4.1",
+]
+
+[dependency-groups]
+dev = [
+    "pdbpp>=0.11.7",
+    "pre-commit>=4.2.0",
+    "ruff>=0.12.7",
+]
