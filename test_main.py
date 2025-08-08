@@ -75,10 +75,10 @@ def test_get_workflow_runs(active_repo_workflow_run_pages):
 def test_write_workflow_run(workflow_run_template):
     mock_file_system = {}
 
-    def mock_writer(obj, f_path):
-        mock_file_system[f_path] = obj
+    def mock_write(obj, f_path):
+        mock_file_system[str(f_path)] = obj
 
     run = workflow_run_template | {"id": 1, "repository": {"name": "test_repo"}}
-    main.write_workflow_run(run, pathlib.Path("test_dir"), mock_writer)
+    main.write_workflow_run(run, pathlib.Path("test_dir"), mock_write)
 
-    assert mock_file_system[pathlib.Path("test_dir/runs/1.json")] == run
+    assert mock_file_system == {"test_dir/runs/1.json": run}

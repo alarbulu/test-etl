@@ -8,6 +8,11 @@ def get_workflow_runs(workflow_runs_pages):
     return (run for page in decoded_pages for run in page["workflow_runs"])
 
 
+def write_workflow_run(workflow_run, directory, writer):
+    f_path = directory / "runs" / f"{workflow_run['id']}.json"
+    writer(workflow_run, f_path)
+
+
 def main():
     pass
 
