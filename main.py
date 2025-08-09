@@ -1,3 +1,7 @@
+def get_repos_pages(session, first_page_url):
+    pass
+
+
 def get_repo_names(repos_pages):
     decoded_pages = (page.json() for page in repos_pages)
     return (repo["name"] for page in decoded_pages for repo in page)
