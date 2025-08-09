@@ -66,17 +66,17 @@ def active_repo_workflow_run_pages(workflow_run_template):
     return iter(pages)
 
 
-def test_get_repos_pages():
+def test_get_pages():
     session = {
-        "repos?page=1": MockResponse([{"name": "repo_1"}], next_url="repos?page=2"),
-        "repos?page=2": MockResponse([{"name": "repo_2"}]),
+        "repos?page=1": MockResponse(["page", "1", "data"], next_url="repos?page=2"),
+        "repos?page=2": MockResponse(["page", "2", "data"]),
     }
-    pages = main.get_repos_pages(session, "repos?page=1")
+    pages = main.get_pages(session, "repos?page=1")
 
     assert isinstance(pages, types.GeneratorType)
     page_1, page_2 = list(pages)
-    assert page_1.json_data == [{"name": "repo_1"}]
-    assert page_2.json_data == [{"name": "repo_2"}]
+    assert page_1.json_data == ["page", "1", "data"]
+    assert page_2.json_data == ["page", "2", "data"]
 
 
 def test_get_repo_names(repos_pages):

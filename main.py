@@ -1,4 +1,4 @@
-def get_repos_pages(session, first_page_url):
+def get_pages(session, first_page_url):
     url = first_page_url
     while True:
         response = session.get(url)
