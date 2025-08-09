@@ -1,5 +1,12 @@
 def get_repos_pages(session, first_page_url):
-    pass
+    url = first_page_url
+    while True:
+        response = session.get(url)
+        yield response
+        if next_link := response.links.get("next"):
+            url = next_link["url"]
+        else:
+            break
 
 
 def get_repo_names(repos_pages):
