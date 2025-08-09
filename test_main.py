@@ -87,10 +87,9 @@ def test_get_repo_names(repos_pages):
 
 def test_get_workflow_runs(active_repo_workflow_run_pages):
     workflow_runs = main.get_workflow_runs(active_repo_workflow_run_pages)
+    run_1, run_2, run_3 = list(workflow_runs)
+
     assert isinstance(workflow_runs, types.GeneratorType)
-    runs_list = list(workflow_runs)
-    assert len(runs_list) == 3
-    run_1, run_2, run_3 = runs_list
     assert run_1["repository"]["name"] == "active_repo"
     assert run_1["id"] == 1
     assert run_2["id"] == 2
