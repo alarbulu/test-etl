@@ -106,6 +106,9 @@ def test_get_with_retry_when_fail(capsys):
 
 
 def test_get_with_retry_when_fail_then_succeed(capsys):
+    def sleep(seconds):
+        return
+
     class MockSession:
         def __init__(self):
             self.responses = {
@@ -119,9 +122,6 @@ def test_get_with_retry_when_fail_then_succeed(capsys):
 
         def get(self, url):
             return self.responses[url].pop(0)
-
-    def sleep(seconds):
-        return
 
     session = MockSession()
     response = main.get_with_retry(session, "flaky_url", 3, 0.5, sleep_function=sleep)
