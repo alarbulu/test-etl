@@ -12,12 +12,9 @@ class MockResponse:
         self.links = {"next": {"url": next_url}} if next_url else {}
         self.json_data = json_data
 
-    def __str__(self):
-        return json.dumps(self.json_data)
-
     @property
     def text(self):
-        return self.__str__()
+        return json.dumps(self.json_data)
 
     def json(self):
         return self.json_data
