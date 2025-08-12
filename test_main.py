@@ -150,14 +150,16 @@ def test_get_pages():
     assert page_2.json_data == ["page", "2", "data"]
 
 
-def test_get_repo_names(repos_pages):
-    repo_names = main.get_repo_names(repos_pages)
+def test__extract_repo_names_from_pages(repos_pages):
+    repo_names = main._extract_repo_names_from_pages(repos_pages)
     assert isinstance(repo_names, types.GeneratorType)
     assert list(repo_names) == ["active_repo", "abandoned_repo", "empty_repo"]
 
 
-def test_get_workflow_runs(active_repo_workflow_run_pages):
-    workflow_runs = main.get_workflow_runs(active_repo_workflow_run_pages)
+def test__extract_workflow_runs_from_pages(active_repo_workflow_run_pages):
+    workflow_runs = main._extract_workflow_runs_from_pages(
+        active_repo_workflow_run_pages
+    )
     run_1, run_2, run_3 = list(workflow_runs)
 
     assert isinstance(workflow_runs, types.GeneratorType)
@@ -198,7 +200,7 @@ def test_write_workflow_run(workflow_run_template):
     assert mock_file_system == {"test_dir/runs/1.json": run}
 
 
-def test_extract_repo_workflow_runs():
+def test_get_repo_workflow_runs():
     page_1 = MockResponse(
         {"total_count": 3, "workflow_runs": [{"id": 1}, {"id": 2}]},
         next_url="page_2_url",
@@ -208,7 +210,7 @@ def test_extract_repo_workflow_runs():
         "https://api.github.com/repos/opensafely/active_repo/actions/runs": page_1,
         "page_2_url": page_2,
     }
-    pages, workflow_runs = main.extract_repo_workflow_runs("active_repo", session)
+    pages, workflow_runs = main.get_repo_workflow_runs("active_repo", session)
 
     assert list(pages) == [page_1, page_2]
     assert list(workflow_runs) == [{"id": 1}, {"id": 2}, {"id": 3}]
