@@ -1,3 +1,4 @@
+import itertools
 import time
 
 
@@ -61,6 +62,12 @@ def write_pages(pages, directory, writer):
 def write_workflow_run(workflow_run, directory, writer):
     f_path = directory / "runs" / f"{workflow_run['id']}.json"
     writer(workflow_run, f_path)
+
+
+def extract_repo_workflow_runs(repo_name, session):
+    url = f"https://api.github.com/repos/opensafely/{repo_name}/actions/runs"
+    pages_1, pages_2 = itertools.tee(get_pages(session, url))
+    return pages_1, get_workflow_runs(pages_2)
 
 
 def main():
