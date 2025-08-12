@@ -156,6 +156,18 @@ def test__extract_repo_names_from_pages(repos_pages):
     assert list(repo_names) == ["active_repo", "abandoned_repo", "empty_repo"]
 
 
+def test_get_repo_names(repos_pages):
+    page_1, page_2 = list(repos_pages)
+    session = {
+        "https://api.github.com/orgs/opensafely/repos": page_1,
+        "repos?page=2": page_2,
+    }
+    pages, repo_names = main.get_repo_names(session)
+
+    assert list(pages) == [page_1, page_2]
+    assert list(repo_names) == ["active_repo", "abandoned_repo", "empty_repo"]
+
+
 def test__extract_workflow_runs_from_pages(active_repo_workflow_run_pages):
     workflow_runs = main._extract_workflow_runs_from_pages(
         active_repo_workflow_run_pages
