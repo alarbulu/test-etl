@@ -11,6 +11,7 @@ class MockResponse:
     def __init__(self, json_data, next_url=None):
         self.links = {"next": {"url": next_url}} if next_url else {}
         self.json_data = json_data
+        self.status_code = 200
 
     @property
     def text(self):
@@ -18,6 +19,18 @@ class MockResponse:
 
     def json(self):
         return self.json_data
+
+    def raise_for_status(self):
+        pass  # Response is valid
+
+
+class MockErrorResponse:
+    def __init__(self, error):
+        self.error = error
+        self.status_code = 400
+
+    def raise_for_status(self):
+        raise Exception(self.error)
 
 
 @pytest.fixture
@@ -61,6 +74,35 @@ def active_repo_workflow_run_pages(workflow_run_template):
         MockResponse({"total_count": 3, "workflow_runs": [run_3]}),
     ]
     return iter(pages)
+
+
+def test_get_with_retry_when_fail_then_succeed(capsys):
+    class MockSession:
+        def __init__(self):
+            self.responses = {
+                "flaky_url": [
+                    MockErrorResponse("Temporary failure"),
+                    MockErrorResponse("Temporary failure"),
+                    MockErrorResponse("Temporary failure"),
+                    MockResponse(["data_1", "data_2"]),
+                ]
+            }
+
+        def get(self, url):
+            return self.responses[url].pop(0)
+
+    def sleep(seconds):
+        return
+
+    session = MockSession()
+    response = main.get_with_retry(session, "flaky_url", 3, 0.5, sleep_function=sleep)
+
+    assert response.json() == ["data_1", "data_2"]
+    assert capsys.readouterr().out == (
+        "Error fetching flaky_url: Temporary failure\nRetrying in 0.5 seconds (retry attempt 1)...\n"
+        "Error fetching flaky_url: Temporary failure\nRetrying in 1.0 seconds (retry attempt 2)...\n"
+        "Error fetching flaky_url: Temporary failure\nRetrying in 2.0 seconds (retry attempt 3)...\n"
+    )
 
 
 def test_get_pages():
