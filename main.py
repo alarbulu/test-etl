@@ -48,6 +48,12 @@ def _extract_repo_names_from_pages(repos_pages):
     return (repo["name"] for page in decoded_pages for repo in page)
 
 
+def get_repo_names(session):
+    url = "https://api.github.com/orgs/opensafely/repos"
+    pages_1, pages_2 = itertools.tee(get_pages(session, url))
+    return pages_1, _extract_repo_names_from_pages(pages_2)
+
+
 def _extract_workflow_runs_from_pages(workflow_runs_pages):
     decoded_pages = (page.json() for page in workflow_runs_pages)
     return (run for page in decoded_pages for run in page["workflow_runs"])
