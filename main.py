@@ -53,6 +53,12 @@ def _extract_workflow_runs_from_pages(workflow_runs_pages):
     return (run for page in decoded_pages for run in page["workflow_runs"])
 
 
+def get_repo_workflow_runs(repo_name, session):
+    url = f"https://api.github.com/repos/opensafely/{repo_name}/actions/runs"
+    pages_1, pages_2 = itertools.tee(get_pages(session, url))
+    return pages_1, _extract_workflow_runs_from_pages(pages_2)
+
+
 def write_pages(pages, directory, writer):
     for page_number, page in enumerate(pages, start=1):
         f_path = directory / "pages" / f"{page_number}.json"
@@ -62,12 +68,6 @@ def write_pages(pages, directory, writer):
 def write_workflow_run(workflow_run, directory, writer):
     f_path = directory / "runs" / f"{workflow_run['id']}.json"
     writer(workflow_run, f_path)
-
-
-def get_repo_workflow_runs(repo_name, session):
-    url = f"https://api.github.com/repos/opensafely/{repo_name}/actions/runs"
-    pages_1, pages_2 = itertools.tee(get_pages(session, url))
-    return pages_1, _extract_workflow_runs_from_pages(pages_2)
 
 
 def main():
