@@ -1,3 +1,5 @@
+import pathlib
+import requests
 import json
 import itertools
 import time
@@ -6,7 +8,13 @@ import collections
 
 File = collections.namedtuple("File", ["filepath", "content"])
 
-GITHUB_ORG = "opensafely"
+GITHUB_ORG = "alartest"
+
+
+def write_file(content, filepath):
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath, "w") as f:
+        f.write(content)
 
 
 class SessionWithRetry:
@@ -97,8 +105,11 @@ def extract(session, output_dir, writer):
         writer(file.content, file.filepath)
 
 
-def main():
-    pass
+def main():  # pragma: no cover
+    session = SessionWithRetry(session=requests.Session())
+    output_dir = pathlib.Path("data")
+
+    extract(session, output_dir, write_file)
 
 
 if __name__ == "__main__":
