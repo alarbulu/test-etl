@@ -1,3 +1,4 @@
+import datetime
 import json
 import pathlib
 import types
@@ -173,6 +174,9 @@ def test_extract():
     def mock_write(obj, f_path):
         mock_file_system[str(f_path)] = obj
 
+    def mock_now():
+        return datetime.datetime(2025, 1, 1)
+
     repos_page_1 = MockResponse([{"name": "repo_1"}], next_url="repos?page=2")
     repos_page_2 = MockResponse([{"name": "repo_2"}])
     repo_1_runs_page = MockResponse(
@@ -186,13 +190,13 @@ def test_extract():
         f"https://api.github.com/repos/{main.GITHUB_ORG}/repo_2/actions/runs": repo_2_runs_page,
     }
     output_dir = pathlib.Path("test_dir")
-    main.extract(session, output_dir, mock_write)
+    main.extract(session, output_dir, mock_write, now=mock_now)
 
     assert mock_file_system == {
-        "test_dir/repos/pages/1.json": '[{"name": "repo_1"}]',
-        "test_dir/repos/pages/2.json": '[{"name": "repo_2"}]',
-        "test_dir/repo_1/pages/1.json": '{"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}',
-        "test_dir/repo_1/runs/1.json": '{"id": 1}',
-        "test_dir/repo_1/runs/2.json": '{"id": 2}',
-        "test_dir/repo_2/pages/1.json": '{"total_count": 0, "workflow_runs": []}',
+        "test_dir/repos/20250101-000000Z/pages/1.json": '[{"name": "repo_1"}]',
+        "test_dir/repos/20250101-000000Z/pages/2.json": '[{"name": "repo_2"}]',
+        "test_dir/repo_1/20250101-000000Z/pages/1.json": '{"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}',
+        "test_dir/repo_1/20250101-000000Z/runs/1.json": '{"id": 1}',
+        "test_dir/repo_1/20250101-000000Z/runs/2.json": '{"id": 2}',
+        "test_dir/repo_2/20250101-000000Z/pages/1.json": '{"total_count": 0, "workflow_runs": []}',
     }
