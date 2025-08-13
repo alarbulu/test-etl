@@ -1,27 +1,34 @@
 import time
 
 
-def get_with_retry(
-    session, url, max_retries, base_delay_seconds, sleep_function=time.sleep
-):
-    retry_count = 0
-    while True:
-        try:
-            response = session.get(url)
-            response.raise_for_status()
-            return response
-        except Exception as error:
-            print(f"Error fetching {url}: {error}")
-            if retry_count < max_retries:
-                delay_seconds = base_delay_seconds * (2**retry_count)
-                print(
-                    f"Retrying in {delay_seconds} seconds (retry attempt {retry_count + 1})..."
-                )
-                retry_count += 1
-                sleep_function(delay_seconds)
-            else:
-                print(f"Maximum retries reached ({max_retries}).")
+class SessionWithRetry:
+    def __init__(
+        self, session, max_retries, base_delay_seconds, sleep_function=time.sleep
+    ):
+        self.session = session
+        self.max_retries = max_retries
+        self.base_delay_seconds = base_delay_seconds
+        self.sleep = sleep_function
+
+    def get(self, url):
+        retry_count = 0
+        while True:
+            try:
+                response = self.session.get(url)
+                response.raise_for_status()
                 return response
+            except Exception as error:
+                print(f"Error fetching {url}: {error}")
+                if retry_count < self.max_retries:
+                    delay_seconds = self.base_delay_seconds * (2**retry_count)
+                    print(
+                        f"Retrying in {delay_seconds} seconds (retry attempt {retry_count + 1})..."
+                    )
+                    retry_count += 1
+                    self.sleep(delay_seconds)
+                else:
+                    print(f"Maximum retries reached ({self.max_retries}).")
+                    return response
 
 
 def get_pages(session, first_page_url):

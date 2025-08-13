@@ -76,22 +76,25 @@ def active_repo_workflow_run_pages(workflow_run_template):
     return iter(pages)
 
 
-def test_get_with_retry_when_successful(capsys):
+def test_session_with_retry_when_successful(capsys):
     def sleep(seconds):
         return
 
     session = {"test_url": MockResponse(["data_1", "data_2"])}
-    response = main.get_with_retry(session, "test_url", 3, 0.5, sleep_function=sleep)
+    session_with_retry = main.SessionWithRetry(session, 3, 0.5, sleep_function=sleep)
+
+    response = session_with_retry.get("test_url")
     assert response.json() == ["data_1", "data_2"]
     assert capsys.readouterr().out == ""
 
 
-def test_get_with_retry_when_fail(capsys):
+def test_session_with_retry_when_fail(capsys):
     def sleep(seconds):
         return
 
     session = {"invalid_url": MockErrorResponse("Network error")}
-    response = main.get_with_retry(session, "invalid_url", 3, 0.5, sleep_function=sleep)
+    session_with_retry = main.SessionWithRetry(session, 3, 0.5, sleep_function=sleep)
+    response = session_with_retry.get("invalid_url")
     assert response.status_code == 400
     assert capsys.readouterr().out == (
         "Error fetching invalid_url: Network error\n"
@@ -105,7 +108,7 @@ def test_get_with_retry_when_fail(capsys):
     )
 
 
-def test_get_with_retry_when_fail_then_succeed(capsys):
+def test_session_with_retry_when_fail_then_succeed(capsys):
     def sleep(seconds):
         return
 
@@ -124,7 +127,8 @@ def test_get_with_retry_when_fail_then_succeed(capsys):
             return self.responses[url].pop(0)
 
     session = MockSession()
-    response = main.get_with_retry(session, "flaky_url", 3, 0.5, sleep_function=sleep)
+    session_with_retry = main.SessionWithRetry(session, 3, 0.5, sleep_function=sleep)
+    response = session_with_retry.get("flaky_url")
 
     assert response.json() == ["data_1", "data_2"]
     assert capsys.readouterr().out == (
