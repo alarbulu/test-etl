@@ -9,7 +9,7 @@ File = collections.namedtuple("File", ["filepath", "content"])
 
 class SessionWithRetry:
     def __init__(
-        self, session, max_retries, base_delay_seconds, sleep_function=time.sleep
+        self, session, max_retries=3, base_delay_seconds=0.5, sleep_function=time.sleep
     ):
         self.session = session
         self.max_retries = max_retries
