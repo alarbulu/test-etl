@@ -124,7 +124,7 @@ def test_get_repo_names():
     page_1 = MockResponse([{"name": "repo_1"}], next_url="repos?page=2")
     page_2 = MockResponse([{"name": "repo_2"}])
     session = {
-        "https://api.github.com/orgs/opensafely/repos": page_1,
+        f"https://api.github.com/orgs/{main.GITHUB_ORG}/repos": page_1,
         "repos?page=2": page_2,
     }
     pages, repo_names = main.get_repo_names(session)
@@ -139,7 +139,7 @@ def test_get_repo_workflow_runs():
     )
     page_2 = MockResponse({"total_count": 2, "workflow_runs": [{"id": 2}]})
     session = {
-        "https://api.github.com/repos/opensafely/repo_1/actions/runs": page_1,
+        f"https://api.github.com/repos/{main.GITHUB_ORG}/repo_1/actions/runs": page_1,
         "page_2_url": page_2,
     }
     pages, workflow_runs = main.get_repo_workflow_runs("repo_1", session)
@@ -180,10 +180,10 @@ def test_extract():
     )
     repo_2_runs_page = MockResponse({"total_count": 0, "workflow_runs": []})
     session = {
-        "https://api.github.com/orgs/opensafely/repos": repos_page_1,
+        f"https://api.github.com/orgs/{main.GITHUB_ORG}/repos": repos_page_1,
         "repos?page=2": repos_page_2,
-        "https://api.github.com/repos/opensafely/repo_1/actions/runs": repo_1_runs_page,
-        "https://api.github.com/repos/opensafely/repo_2/actions/runs": repo_2_runs_page,
+        f"https://api.github.com/repos/{main.GITHUB_ORG}/repo_1/actions/runs": repo_1_runs_page,
+        f"https://api.github.com/repos/{main.GITHUB_ORG}/repo_2/actions/runs": repo_2_runs_page,
     }
     output_dir = pathlib.Path("test_dir")
     main.extract(session, output_dir, mock_write)
