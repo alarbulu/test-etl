@@ -93,18 +93,14 @@ def get_run_files(workflow_runs, output_dir):
 
 def extract(session, output_dir, writer, now=datetime.datetime.now):
     timestamp = now().strftime("%Y%m%d-%H%M%SZ")
-    repo_names_pages, repo_names = get_repo_names(session)
-    repo_names_files = get_page_files(
-        repo_names_pages, output_dir / "repos" / timestamp
-    )
+    repo_pages, repo_names = get_repo_names(session)
+    repo_files = get_page_files(repo_pages, output_dir / "repos" / timestamp)
 
-    file_iterables = [repo_names_files]
+    file_iterables = [repo_files]
     for repo_name in repo_names:
-        workflow_run_pages, workflow_runs = get_repo_workflow_runs(repo_name, session)
-        page_files = get_page_files(
-            workflow_run_pages, output_dir / repo_name / timestamp
-        )
-        run_files = get_run_files(workflow_runs, output_dir / repo_name / timestamp)
+        run_pages, runs = get_repo_workflow_runs(repo_name, session)
+        page_files = get_page_files(run_pages, output_dir / repo_name / timestamp)
+        run_files = get_run_files(runs, output_dir / repo_name / timestamp)
         file_iterables.extend([page_files, run_files])
 
     for file in itertools.chain(*file_iterables):
