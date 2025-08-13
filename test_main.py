@@ -200,3 +200,13 @@ def test_extract():
         "test_dir/repo_1/20250101-000000Z/runs/2.json": '{"id": 2}',
         "test_dir/repo_2/20250101-000000Z/pages/1.json": '{"total_count": 0, "workflow_runs": []}',
     }
+
+
+def test_get_list_of_extracted_repos(tmpdir):
+    workflows_dir = pathlib.Path(tmpdir)
+    (workflows_dir / "repo_1").mkdir(parents=True)
+    (workflows_dir / "repo_2").mkdir(parents=True)
+
+    extracted_repos = main.get_list_of_extracted_repos(workflows_dir)
+
+    assert list(extracted_repos) == ["repo_1", "repo_2"]
