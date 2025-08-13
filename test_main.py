@@ -112,19 +112,18 @@ def test_session_with_retry_when_fail_then_succeed(capsys):
     def sleep(seconds):
         return
 
-    class MockSession:
-        def __init__(self):
-            self.responses = {
-                "flaky_url": [
-                    MockErrorResponse("Temporary failure"),
-                    MockErrorResponse("Temporary failure"),
-                    MockErrorResponse("Temporary failure"),
-                    MockResponse(["data_1", "data_2"]),
-                ]
-            }
+    responses = {
+        "flaky_url": [
+            MockErrorResponse("Temporary failure"),
+            MockErrorResponse("Temporary failure"),
+            MockErrorResponse("Temporary failure"),
+            MockResponse(["data_1", "data_2"]),
+        ]
+    }
 
+    class MockSession:
         def get(self, url):
-            return self.responses[url].pop(0)
+            return responses[url].pop(0)
 
     session = MockSession()
     session_with_retry = main.SessionWithRetry(session, 3, 0.5, sleep_function=sleep)
