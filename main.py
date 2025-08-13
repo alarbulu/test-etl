@@ -1,3 +1,4 @@
+import json
 import itertools
 import time
 
@@ -72,8 +73,9 @@ def write_pages(pages, directory, writer):
 
 
 def write_workflow_run(workflow_run, directory, writer):
+    # We can only serialize the JSON right before writing since we need the ID
     f_path = directory / "runs" / f"{workflow_run['id']}.json"
-    writer(workflow_run, f_path)
+    writer(json.dumps(workflow_run), f_path)
 
 
 def extract(session, output_dir, writer):

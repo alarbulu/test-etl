@@ -191,16 +191,18 @@ def test_write_pages():
     }
 
 
-def test_write_workflow_run(workflow_run_template):
+def test_write_workflow_run():
     mock_file_system = {}
 
     def mock_write(obj, f_path):
         mock_file_system[str(f_path)] = obj
 
-    run = workflow_run_template | {"id": 1, "repository": {"name": "test_repo"}}
+    run = {"id": 1, "repository": {"name": "test_repo"}}
     main.write_workflow_run(run, pathlib.Path("test_dir"), mock_write)
 
-    assert mock_file_system == {"test_dir/runs/1.json": run}
+    assert mock_file_system == {
+        "test_dir/runs/1.json": '{"id": 1, "repository": {"name": "test_repo"}}'
+    }
 
 
 def test_extract():
@@ -223,6 +225,6 @@ def test_extract():
     assert mock_file_system == {
         "test_dir/repos/pages/1.json": '[{"name": "my_repo"}]',
         "test_dir/my_repo/pages/1.json": '{"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}',
-        "test_dir/my_repo/runs/1.json": {"id": 1},
-        "test_dir/my_repo/runs/2.json": {"id": 2},
+        "test_dir/my_repo/runs/1.json": '{"id": 1}',
+        "test_dir/my_repo/runs/2.json": '{"id": 2}',
     }
