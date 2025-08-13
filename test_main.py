@@ -172,37 +172,26 @@ def test_get_repo_workflow_runs():
     assert list(workflow_runs) == [{"id": 1}, {"id": 2}, {"id": 3}]
 
 
-def test_write_pages():
-    mock_file_system = {}
-
-    def mock_write(obj, f_path):
-        mock_file_system[str(f_path)] = obj
-
+def test_get_page_files():
     pages = iter(
         [
             MockResponse(["data_1", "data_2"]),
             MockResponse(["data_3", "data_4"]),
         ]
     )
-    main.write_pages(pages, pathlib.Path("test_dir"), mock_write)
-    assert mock_file_system == {
-        "test_dir/pages/1.json": '["data_1", "data_2"]',
-        "test_dir/pages/2.json": '["data_3", "data_4"]',
-    }
+    files = main.get_page_files(pages, pathlib.Path("test_dir"))
+
+    assert list(files) == [
+        main.File(pathlib.Path("test_dir/pages/1.json"), '["data_1", "data_2"]'),
+        main.File(pathlib.Path("test_dir/pages/2.json"), '["data_3", "data_4"]'),
+    ]
 
 
-def test_write_workflow_run():
-    mock_file_system = {}
+def test_get_run_files():
+    run = {"id": 1}
+    files = main.get_run_files([run], pathlib.Path("test_dir"))
 
-    def mock_write(obj, f_path):
-        mock_file_system[str(f_path)] = obj
-
-    run = {"id": 1, "repository": {"name": "test_repo"}}
-    main.write_workflow_run(run, pathlib.Path("test_dir"), mock_write)
-
-    assert mock_file_system == {
-        "test_dir/runs/1.json": '{"id": 1, "repository": {"name": "test_repo"}}'
-    }
+    assert list(files) == [main.File(pathlib.Path("test_dir/runs/1.json"), '{"id": 1}')]
 
 
 def test_extract():
@@ -211,20 +200,28 @@ def test_extract():
     def mock_write(obj, f_path):
         mock_file_system[str(f_path)] = obj
 
-    repos_page = MockResponse([{"name": "my_repo"}])
-    workflow_runs_page = MockResponse(
+    repos_page_1 = MockResponse([{"name": "active_repo"}], next_url="repos?page=2")
+    repos_page_2 = MockResponse([{"name": "empty_repo"}])
+    active_repo_workflow_runs_page = MockResponse(
         {"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}
     )
+    empty_repo_workflow_runs_page = MockResponse(
+        {"total_count": 0, "workflow_runs": []}
+    )
     session = {
-        "https://api.github.com/orgs/opensafely/repos": repos_page,
-        "https://api.github.com/repos/opensafely/my_repo/actions/runs": workflow_runs_page,
+        "https://api.github.com/orgs/opensafely/repos": repos_page_1,
+        "repos?page=2": repos_page_2,
+        "https://api.github.com/repos/opensafely/active_repo/actions/runs": active_repo_workflow_runs_page,
+        "https://api.github.com/repos/opensafely/empty_repo/actions/runs": empty_repo_workflow_runs_page,
     }
     output_dir = pathlib.Path("test_dir")
     main.extract(session, output_dir, mock_write)
 
     assert mock_file_system == {
-        "test_dir/repos/pages/1.json": '[{"name": "my_repo"}]',
-        "test_dir/my_repo/pages/1.json": '{"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}',
-        "test_dir/my_repo/runs/1.json": '{"id": 1}',
-        "test_dir/my_repo/runs/2.json": '{"id": 2}',
+        "test_dir/repos/pages/1.json": '[{"name": "active_repo"}]',
+        "test_dir/repos/pages/2.json": '[{"name": "empty_repo"}]',
+        "test_dir/active_repo/pages/1.json": '{"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}',
+        "test_dir/active_repo/runs/1.json": '{"id": 1}',
+        "test_dir/active_repo/runs/2.json": '{"id": 2}',
+        "test_dir/empty_repo/pages/1.json": '{"total_count": 0, "workflow_runs": []}',
     }

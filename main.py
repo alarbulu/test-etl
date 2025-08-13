@@ -4,6 +4,8 @@ import time
 
 import collections
 
+File = collections.namedtuple("File", ["filepath", "content"])
+
 
 class SessionWithRetry:
     def __init__(
@@ -68,43 +70,26 @@ def get_repo_workflow_runs(repo_name, session):
     return pages_1, _extract_workflow_runs_from_pages(pages_2)
 
 
-def write_pages(pages, directory, writer):
+def get_page_files(pages, output_dir):
     for page_number, page in enumerate(pages, start=1):
-        f_path = directory / "pages" / f"{page_number}.json"
-        writer(page.text, f_path)
+        yield File(output_dir / "pages" / f"{page_number}.json", page.text)
 
 
-def write_workflow_run(workflow_run, directory, writer):
-    # We can only serialize the JSON right before writing since we need the ID
-    f_path = directory / "runs" / f"{workflow_run['id']}.json"
-    writer(json.dumps(workflow_run), f_path)
+def get_run_files(workflow_runs, output_dir):
+    for run in workflow_runs:
+        yield File(output_dir / "runs" / f"{run['id']}.json", json.dumps(run))
 
 
 def extract(session, output_dir, writer):
-    File = collections.namedtuple("File", ["filepath", "content"])
-
     repo_names_pages, repo_names = get_repo_names(session)
-    repo_names_files = (
-        File(output_dir / "repos" / "pages" / f"{page_number}.json", page.text)
-        for page_number, page in enumerate(repo_names_pages, start=1)
-    )
+    repo_names_files = get_page_files(repo_names_pages, output_dir / "repos")
 
     file_iterables = [repo_names_files]
-
-    def get_workflow_run_files(repo_name):
-        workflow_run_pages, workflow_runs = get_repo_workflow_runs(repo_name, session)
-        page_files = (
-            File(output_dir / repo_name / "pages" / f"{page_number}.json", page.text)
-            for page_number, page in enumerate(workflow_run_pages, start=1)
-        )
-        run_files = (
-            File(output_dir / repo_name / "runs" / f"{run['id']}.json", json.dumps(run))
-            for run in workflow_runs
-        )
-        return [page_files, run_files]
-
     for repo_name in repo_names:
-        file_iterables.extend(get_workflow_run_files(repo_name))
+        workflow_run_pages, workflow_runs = get_repo_workflow_runs(repo_name, session)
+        page_files = get_page_files(workflow_run_pages, output_dir / repo_name)
+        run_files = get_run_files(workflow_runs, output_dir / repo_name)
+        file_iterables.extend([page_files, run_files])
 
     for file in itertools.chain(*file_iterables):
         writer(file.content, file.filepath)
