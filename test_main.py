@@ -50,23 +50,6 @@ def workflow_run_template():
     }
 
 
-@pytest.fixture
-def active_repo_workflow_run_pages(workflow_run_template):
-    template = workflow_run_template | {"repository": {"name": "active_repo"}}
-    run_1 = template | {"id": 1}
-    run_2 = template | {"id": 2}
-    run_3 = template | {"id": 3}
-
-    pages = [
-        MockResponse(
-            {"total_count": 3, "workflow_runs": [run_1, run_2]},
-            next_url="active_repo/runs?page=2",
-        ),
-        MockResponse({"total_count": 3, "workflow_runs": [run_3]}),
-    ]
-    return iter(pages)
-
-
 def test_session_with_retry_when_successful(capsys):
     def sleep(seconds):
         return
@@ -104,12 +87,8 @@ def test_session_with_retry_when_fail_then_succeed(capsys):
         return
 
     responses = {
-        "flaky_url": [
-            MockErrorResponse("Temporary failure"),
-            MockErrorResponse("Temporary failure"),
-            MockErrorResponse("Temporary failure"),
-            MockResponse(["data_1", "data_2"]),
-        ]
+        "flaky_url": [MockErrorResponse("Temporary failure")] * 3
+        + [MockResponse(["data_1", "data_2"])]
     }
 
     class MockSession:
@@ -142,10 +121,8 @@ def test_get_pages():
 
 
 def test_get_repo_names():
-    page_1 = MockResponse(
-        [{"name": "active_repo"}, {"name": "abandoned_repo"}], next_url="repos?page=2"
-    )
-    page_2 = MockResponse([{"name": "empty_repo"}])
+    page_1 = MockResponse([{"name": "repo_1"}], next_url="repos?page=2")
+    page_2 = MockResponse([{"name": "repo_2"}])
     session = {
         "https://api.github.com/orgs/opensafely/repos": page_1,
         "repos?page=2": page_2,
@@ -153,45 +130,41 @@ def test_get_repo_names():
     pages, repo_names = main.get_repo_names(session)
 
     assert list(pages) == [page_1, page_2]
-    assert list(repo_names) == ["active_repo", "abandoned_repo", "empty_repo"]
+    assert list(repo_names) == ["repo_1", "repo_2"]
 
 
 def test_get_repo_workflow_runs():
     page_1 = MockResponse(
-        {"total_count": 3, "workflow_runs": [{"id": 1}, {"id": 2}]},
-        next_url="page_2_url",
+        {"total_count": 2, "workflow_runs": [{"id": 1}]}, next_url="page_2_url"
     )
-    page_2 = MockResponse({"total_count": 3, "workflow_runs": [{"id": 3}]})
+    page_2 = MockResponse({"total_count": 2, "workflow_runs": [{"id": 2}]})
     session = {
-        "https://api.github.com/repos/opensafely/active_repo/actions/runs": page_1,
+        "https://api.github.com/repos/opensafely/repo_1/actions/runs": page_1,
         "page_2_url": page_2,
     }
-    pages, workflow_runs = main.get_repo_workflow_runs("active_repo", session)
+    pages, workflow_runs = main.get_repo_workflow_runs("repo_1", session)
 
     assert list(pages) == [page_1, page_2]
-    assert list(workflow_runs) == [{"id": 1}, {"id": 2}, {"id": 3}]
+    assert list(workflow_runs) == [{"id": 1}, {"id": 2}]
 
 
 def test_get_page_files():
-    pages = iter(
-        [
-            MockResponse(["data_1", "data_2"]),
-            MockResponse(["data_3", "data_4"]),
-        ]
-    )
+    pages = iter([MockResponse(["data_1"]), MockResponse(["data_2"])])
     files = main.get_page_files(pages, pathlib.Path("test_dir"))
 
     assert list(files) == [
-        main.File(pathlib.Path("test_dir/pages/1.json"), '["data_1", "data_2"]'),
-        main.File(pathlib.Path("test_dir/pages/2.json"), '["data_3", "data_4"]'),
+        main.File(pathlib.Path("test_dir/pages/1.json"), '["data_1"]'),
+        main.File(pathlib.Path("test_dir/pages/2.json"), '["data_2"]'),
     ]
 
 
 def test_get_run_files():
-    run = {"id": 1}
-    files = main.get_run_files([run], pathlib.Path("test_dir"))
+    files = main.get_run_files([{"id": 1}, {"id": 2}], pathlib.Path("test_dir"))
 
-    assert list(files) == [main.File(pathlib.Path("test_dir/runs/1.json"), '{"id": 1}')]
+    assert list(files) == [
+        main.File(pathlib.Path("test_dir/runs/1.json"), '{"id": 1}'),
+        main.File(pathlib.Path("test_dir/runs/2.json"), '{"id": 2}'),
+    ]
 
 
 def test_extract():
@@ -200,28 +173,26 @@ def test_extract():
     def mock_write(obj, f_path):
         mock_file_system[str(f_path)] = obj
 
-    repos_page_1 = MockResponse([{"name": "active_repo"}], next_url="repos?page=2")
-    repos_page_2 = MockResponse([{"name": "empty_repo"}])
-    active_repo_workflow_runs_page = MockResponse(
+    repos_page_1 = MockResponse([{"name": "repo_1"}], next_url="repos?page=2")
+    repos_page_2 = MockResponse([{"name": "repo_2"}])
+    repo_1_runs_page = MockResponse(
         {"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}
     )
-    empty_repo_workflow_runs_page = MockResponse(
-        {"total_count": 0, "workflow_runs": []}
-    )
+    repo_2_runs_page = MockResponse({"total_count": 0, "workflow_runs": []})
     session = {
         "https://api.github.com/orgs/opensafely/repos": repos_page_1,
         "repos?page=2": repos_page_2,
-        "https://api.github.com/repos/opensafely/active_repo/actions/runs": active_repo_workflow_runs_page,
-        "https://api.github.com/repos/opensafely/empty_repo/actions/runs": empty_repo_workflow_runs_page,
+        "https://api.github.com/repos/opensafely/repo_1/actions/runs": repo_1_runs_page,
+        "https://api.github.com/repos/opensafely/repo_2/actions/runs": repo_2_runs_page,
     }
     output_dir = pathlib.Path("test_dir")
     main.extract(session, output_dir, mock_write)
 
     assert mock_file_system == {
-        "test_dir/repos/pages/1.json": '[{"name": "active_repo"}]',
-        "test_dir/repos/pages/2.json": '[{"name": "empty_repo"}]',
-        "test_dir/active_repo/pages/1.json": '{"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}',
-        "test_dir/active_repo/runs/1.json": '{"id": 1}',
-        "test_dir/active_repo/runs/2.json": '{"id": 2}',
-        "test_dir/empty_repo/pages/1.json": '{"total_count": 0, "workflow_runs": []}',
+        "test_dir/repos/pages/1.json": '[{"name": "repo_1"}]',
+        "test_dir/repos/pages/2.json": '[{"name": "repo_2"}]',
+        "test_dir/repo_1/pages/1.json": '{"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}',
+        "test_dir/repo_1/runs/1.json": '{"id": 1}',
+        "test_dir/repo_1/runs/2.json": '{"id": 2}',
+        "test_dir/repo_2/pages/1.json": '{"total_count": 0, "workflow_runs": []}',
     }
