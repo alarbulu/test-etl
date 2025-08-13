@@ -201,3 +201,28 @@ def test_write_workflow_run(workflow_run_template):
     main.write_workflow_run(run, pathlib.Path("test_dir"), mock_write)
 
     assert mock_file_system == {"test_dir/runs/1.json": run}
+
+
+def test_extract():
+    mock_file_system = {}
+
+    def mock_write(obj, f_path):
+        mock_file_system[str(f_path)] = obj
+
+    repos_page = MockResponse([{"name": "my_repo"}])
+    workflow_runs_page = MockResponse(
+        {"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}
+    )
+    session = {
+        "https://api.github.com/orgs/opensafely/repos": repos_page,
+        "https://api.github.com/repos/opensafely/my_repo/actions/runs": workflow_runs_page,
+    }
+    output_dir = pathlib.Path("test_dir")
+    main.extract(session, output_dir, mock_write)
+
+    assert mock_file_system == {
+        "test_dir/repos/pages/1.json": '[{"name": "my_repo"}]',
+        "test_dir/my_repo/pages/1.json": '{"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}',
+        "test_dir/my_repo/runs/1.json": {"id": 1},
+        "test_dir/my_repo/runs/2.json": {"id": 2},
+    }

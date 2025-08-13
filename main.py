@@ -76,6 +76,17 @@ def write_workflow_run(workflow_run, directory, writer):
     writer(workflow_run, f_path)
 
 
+def extract(session, output_dir, writer):
+    repos_pages, repo_names = get_repo_names(session)
+    write_pages(repos_pages, output_dir / "repos", writer)
+
+    for repo in repo_names:
+        workflow_runs_pages, workflow_runs = get_repo_workflow_runs(repo, session)
+        write_pages(workflow_runs_pages, output_dir / repo, writer)
+        for workflow_run in workflow_runs:
+            write_workflow_run(workflow_run, output_dir / repo, writer)
+
+
 def main():
     pass
 
