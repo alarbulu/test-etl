@@ -202,11 +202,11 @@ def test_extract():
     }
 
 
-def test_get_list_of_extracted_repos(tmpdir):
+def test_get_names_of_extracted_repos(tmpdir):
     workflows_dir = pathlib.Path(tmpdir)
     (workflows_dir / "repo_1").mkdir(parents=True)
     (workflows_dir / "repo_2").mkdir(parents=True)
 
-    extracted_repos = main.get_list_of_extracted_repos(workflows_dir)
+    extracted_repos = main.get_names_of_extracted_repos(workflows_dir)
 
     assert list(extracted_repos) == ["repo_1", "repo_2"]
