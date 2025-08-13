@@ -2,6 +2,8 @@ import json
 import itertools
 import time
 
+import collections
+
 
 class SessionWithRetry:
     def __init__(
@@ -79,14 +81,33 @@ def write_workflow_run(workflow_run, directory, writer):
 
 
 def extract(session, output_dir, writer):
-    repos_pages, repo_names = get_repo_names(session)
-    write_pages(repos_pages, output_dir / "repos", writer)
+    File = collections.namedtuple("File", ["filepath", "content"])
 
-    for repo in repo_names:
-        workflow_runs_pages, workflow_runs = get_repo_workflow_runs(repo, session)
-        write_pages(workflow_runs_pages, output_dir / repo, writer)
-        for workflow_run in workflow_runs:
-            write_workflow_run(workflow_run, output_dir / repo, writer)
+    repo_names_pages, repo_names = get_repo_names(session)
+    repo_names_files = (
+        File(output_dir / "repos" / "pages" / f"{page_number}.json", page.text)
+        for page_number, page in enumerate(repo_names_pages, start=1)
+    )
+
+    file_iterables = [repo_names_files]
+
+    def get_workflow_run_files(repo_name):
+        workflow_run_pages, workflow_runs = get_repo_workflow_runs(repo_name, session)
+        page_files = (
+            File(output_dir / repo_name / "pages" / f"{page_number}.json", page.text)
+            for page_number, page in enumerate(workflow_run_pages, start=1)
+        )
+        run_files = (
+            File(output_dir / repo_name / "runs" / f"{run['id']}.json", json.dumps(run))
+            for run in workflow_runs
+        )
+        return [page_files, run_files]
+
+    for repo_name in repo_names:
+        file_iterables.extend(get_workflow_run_files(repo_name))
+
+    for file in itertools.chain(*file_iterables):
+        writer(file.content, file.filepath)
 
 
 def main():
