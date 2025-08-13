@@ -107,6 +107,10 @@ def extract(session, output_dir, write_function, now_function=datetime.datetime.
         write_function(file.content, file.filepath)
 
 
+def get_list_of_extracted_repos(workflows_dir):
+    return [repo.name for repo in workflows_dir.iterdir() if repo.is_dir()]
+
+
 def main():  # pragma: no cover
     session = SessionWithRetry(session=requests.Session())
     output_dir = pathlib.Path("data")
