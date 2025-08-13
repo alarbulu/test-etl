@@ -190,7 +190,7 @@ def test_extract():
         f"https://api.github.com/repos/{main.GITHUB_ORG}/repo_2/actions/runs": repo_2_runs_page,
     }
     output_dir = pathlib.Path("test_dir")
-    main.extract(session, output_dir, mock_write, now=mock_now)
+    main.extract(session, output_dir, mock_write, now_function=mock_now)
 
     assert mock_file_system == {
         "test_dir/repos/20250101-000000Z/pages/1.json": '[{"name": "repo_1"}]',
