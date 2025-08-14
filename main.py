@@ -3,11 +3,10 @@ import csv
 import datetime
 import itertools
 import json
-import os
 import pathlib
 import time
 
-import requests
+from auth import GitHubAPISession
 
 
 def write_file(text, filepath):
@@ -42,14 +41,6 @@ Record = collections.namedtuple(
         "run_started_at",
     ],
 )
-
-
-class GitHubAPISession(requests.Session):
-    def __init__(self, token=None):
-        super().__init__()
-        token = os.environ["GITHUB_WORKFLOW_RUNS_TOKEN"]
-        self.headers.update({"Authorization": f"Bearer {token}"})
-        self.params.update({"per_page": 100, "format": "json"})
 
 
 class SessionWithRetry:
