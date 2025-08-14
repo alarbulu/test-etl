@@ -230,6 +230,7 @@ def test_get_records(tmpdir):
             "name": None  # Placeholder
         },
     }
+    # Timestamp handling is tested elsewhere so only one timestamp per repo here
     workflows_dir = pathlib.Path(tmpdir)
     repo_1_dir = workflows_dir / "repo_1" / "20250101-000000Z" / "runs"
     repo_2_dir = workflows_dir / "repo_2" / "20250101-000000Z" / "runs"
