@@ -233,8 +233,8 @@ def test_get_all_extracted_run_filepaths(tmpdir):
     ]
 
 
-def test_get_latest_run_files():
-    repo_dir = pathlib.Path("repo_1")
+def test_get_latest_run_files(tmpdir):
+    repo_dir = pathlib.Path(tmpdir) / "repo_1"
     filepaths = sorted(
         [
             repo_dir / "20250101-000000Z" / "runs" / "1.json",
