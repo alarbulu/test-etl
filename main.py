@@ -4,6 +4,7 @@ import pathlib
 import requests
 import json
 import itertools
+import os
 import time
 
 import collections
@@ -41,6 +42,13 @@ def write_csv(records, f_path):  # pragma: no cover
         writer = csv.writer(f)
         writer.writerows([record_0._fields, record_0])
         writer.writerows(records)
+
+
+class GitHubAPISession(requests.Session):
+    def __init__(self, token=None):
+        super().__init__()
+        token = os.environ["GITHUB_WORKFLOW_RUNS_TOKEN"]
+        self.headers.update({"Authorization": f"Bearer {token}"})
 
 
 class SessionWithRetry:
