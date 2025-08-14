@@ -142,7 +142,8 @@ def extract(session, output_dir, datetime_, write_function):
 
 
 def get_names_of_extracted_repos(workflows_dir):
-    return (repo.name for repo in workflows_dir.iterdir() if repo.is_dir())
+    # Being deterministic is more important than saving memory for a couple of strings
+    return sorted(repo.name for repo in workflows_dir.iterdir() if repo.is_dir())
 
 
 def load_latest_workflow_runs(repo_dir):
@@ -175,13 +176,13 @@ def get_records(workflows_dir):
         )
 
 
-def main(session, output_dir, now_function=datetime.datetime.now):
+def main(session, workflows_dir, now_function=datetime.datetime.now):
     # Extract and write data to disk
-    extract(SessionWithRetry(session), output_dir, now_function(), write_file)
+    extract(SessionWithRetry(session), workflows_dir, now_function(), write_file)
     # Get latest workflow runs from disk (may include past extractions)
-    records = get_records(output_dir)
+    records = get_records(workflows_dir)
     # Load
-    write_csv(records, output_dir / "workflow_runs.csv")
+    write_csv(records, workflows_dir / "workflow_runs.csv")
 
 
 if __name__ == "__main__":
