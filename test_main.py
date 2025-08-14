@@ -265,6 +265,7 @@ def test_get_records(tmpdir):
 
 
 def test_main(tmpdir):
+    # Run through pipeline for a single workflow run
     output_dir = pathlib.Path(tmpdir)
 
     def mock_now():
@@ -302,12 +303,12 @@ def test_main(tmpdir):
         run_file = json.load(f)
 
     with open(output_dir / "workflow_runs.csv") as f:
-        csv_content = f.read()
+        csv_file = f.read()
 
     assert repo_page == [{"name": "test_repo"}]
     assert run_page == {"total_count": 1, "workflow_runs": [run]}
     assert run_file == run
-    assert csv_content == (
+    assert csv_file == (
         "id,repo,name,head_sha,status,conclusion,created_at,updated_at,run_started_at\n"
         "1,test_repo,My Workflow,12345678,pending,,2025-01-01T00:00:00Z,2025-01-01T00:00:00Z,2025-01-01T00:00:00Z\n"
     )
