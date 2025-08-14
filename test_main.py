@@ -219,16 +219,16 @@ def test_get_latest_run_files(tmpdir):
     newer_dir = repo_dir / "20250102-000000Z" / "runs"
     newer_dir.mkdir(parents=True)
 
-    (older_dir / "1.json").write_text("{}")
-    (older_dir / "2.json").write_text("{}")
-    (newer_dir / "2.json").write_text("{}")
-    (newer_dir / "3.json").write_text("{}")
+    (older_dir / "1.json").write_text('{"id": 1}')
+    (older_dir / "2.json").write_text('{"id": 2}')
+    (newer_dir / "2.json").write_text('{"id": 2}')
+    (newer_dir / "3.json").write_text('{"id": 3}')
 
     files = main.get_latest_workflow_run_files(repo_dir)
 
     assert isinstance(files, types.GeneratorType)
     assert list(files) == [
-        main.File(newer_dir / "3.json", "{}"),
-        main.File(newer_dir / "2.json", "{}"),
-        main.File(older_dir / "1.json", "{}"),
+        main.File(newer_dir / "3.json", '{"id": 3}'),
+        main.File(newer_dir / "2.json", '{"id": 2}'),
+        main.File(older_dir / "1.json", '{"id": 1}'),
     ]
