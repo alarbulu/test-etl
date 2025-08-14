@@ -3,7 +3,6 @@ import json
 import pathlib
 import types
 
-import pytest
 
 import main
 
@@ -32,23 +31,6 @@ class MockErrorResponse:
 
     def raise_for_status(self):
         raise Exception(self.error)
-
-
-@pytest.fixture
-def workflow_run_template():
-    return {
-        "id": None,  # Placeholder
-        "name": "My Workflow",
-        "head_sha": 12345678,
-        "status": "pending",
-        "conclusion": None,
-        "created_at": "2025-01-01T00:00:00Z",
-        "updated_at": "2025-01-01T00:00:00Z",
-        "run_started_at": "2025-01-01T00:00:00Z",
-        "repository": {
-            "name": None  # Placeholder
-        },
-    }
 
 
 def test_session_with_retry_when_successful(capsys):
@@ -234,19 +216,31 @@ def test_load_latest_workflow_runs(tmpdir):
     ]
 
 
-def test_get_records(tmpdir, workflow_run_template):
+def test_get_records(tmpdir):
+    template = {
+        "id": None,  # Placeholder
+        "name": "My Workflow",
+        "head_sha": 12345678,
+        "status": "pending",
+        "conclusion": None,
+        "created_at": "2025-01-01T00:00:00Z",
+        "updated_at": "2025-01-01T00:00:00Z",
+        "run_started_at": "2025-01-01T00:00:00Z",
+        "repository": {
+            "name": None  # Placeholder
+        },
+    }
     workflows_dir = pathlib.Path(tmpdir)
     repo_1_dir = workflows_dir / "repo_1" / "20250101-000000Z" / "runs"
     repo_2_dir = workflows_dir / "repo_2" / "20250101-000000Z" / "runs"
     repo_1_dir.mkdir(parents=True)
     repo_2_dir.mkdir(parents=True)
 
-    repo_1_run_1 = workflow_run_template | {"id": 1, "repository": {"name": "repo_1"}}
+    repo_1_run_1 = template | {"id": 1, "repository": {"name": "repo_1"}}
     (repo_1_dir / "1.json").write_text(json.dumps(repo_1_run_1))
-    repo_1_run_2 = workflow_run_template | {"id": 2, "repository": {"name": "repo_1"}}
+    repo_1_run_2 = template | {"id": 2, "repository": {"name": "repo_1"}}
     (repo_1_dir / "2.json").write_text(json.dumps(repo_1_run_2))
-
-    repo_2_run_3 = workflow_run_template | {"id": 3, "repository": {"name": "repo_2"}}
+    repo_2_run_3 = template | {"id": 3, "repository": {"name": "repo_2"}}
     (repo_2_dir / "3.json").write_text(json.dumps(repo_2_run_3))
 
     records = main.get_records(workflows_dir)
