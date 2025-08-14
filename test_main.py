@@ -210,3 +210,24 @@ def test_get_names_of_extracted_repos(tmpdir):
     extracted_repos = main.get_names_of_extracted_repos(workflows_dir)
 
     assert list(extracted_repos) == ["repo_1", "repo_2"]
+
+
+def test_get_all_extracted_run_filepaths(tmpdir):
+    workflows_dir = pathlib.Path(tmpdir)
+    timestamp_dir_1 = workflows_dir / "repo_1" / "20250101-000000Z" / "runs"
+    (timestamp_dir_1).mkdir(parents=True)
+    (timestamp_dir_1 / "1.json").touch()
+    (timestamp_dir_1 / "2.json").touch()
+    timestamp_dir_2 = workflows_dir / "repo_1" / "20250102-000000Z" / "runs"
+    (timestamp_dir_2).mkdir(parents=True)
+    (timestamp_dir_2 / "1.json").touch()
+    (timestamp_dir_2 / "2.json").touch()
+
+    run_files = main.get_all_extracted_run_filepaths(workflows_dir, "repo_1")
+
+    assert run_files == [
+        workflows_dir / "repo_1" / "20250102-000000Z" / "runs" / "2.json",
+        workflows_dir / "repo_1" / "20250102-000000Z" / "runs" / "1.json",
+        workflows_dir / "repo_1" / "20250101-000000Z" / "runs" / "2.json",
+        workflows_dir / "repo_1" / "20250101-000000Z" / "runs" / "1.json",
+    ]

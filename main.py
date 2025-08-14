@@ -111,6 +111,13 @@ def get_names_of_extracted_repos(workflows_dir):
     return (repo.name for repo in workflows_dir.iterdir() if repo.is_dir())
 
 
+def get_all_extracted_run_filepaths(workflows_dir, repo_name):
+    return sorted(
+        [filepath for filepath in (workflows_dir / repo_name).glob("*/runs/*.json")],
+        reverse=True,
+    )
+
+
 def main():  # pragma: no cover
     session = SessionWithRetry(session=requests.Session())
     output_dir = pathlib.Path("data")
