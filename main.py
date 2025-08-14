@@ -7,7 +7,7 @@ import time
 
 import collections
 
-File = collections.namedtuple("File", ["filepath", "content"])
+File = collections.namedtuple("File", ["filepath", "text"])
 
 GITHUB_ORG = "alartest"
 
@@ -27,10 +27,10 @@ Record = collections.namedtuple(
 )
 
 
-def write_file(content, filepath):
+def write_file(text, filepath):
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with open(filepath, "w") as f:
-        f.write(content)
+        f.write(text)
 
 
 class SessionWithRetry:
@@ -119,7 +119,7 @@ def extract(session, output_dir, write_function, now_function=datetime.datetime.
         file_iterables.extend([page_files, run_files])
 
     for file in itertools.chain(*file_iterables):
-        write_function(file.content, file.filepath)
+        write_function(file.text, file.filepath)
 
 
 def get_names_of_extracted_repos(workflows_dir):
