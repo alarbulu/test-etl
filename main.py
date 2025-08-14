@@ -170,7 +170,9 @@ def main():  # pragma: no cover
     session = SessionWithRetry(session=requests.Session())
     output_dir = pathlib.Path("data")
 
-    extract(session, output_dir, write_file)
+    extract(session, output_dir, write_file)  # writes to disk
+    records = get_records(output_dir)
+    write_csv(records, output_dir / "workflow_runs.csv")
 
 
 if __name__ == "__main__":
