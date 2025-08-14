@@ -232,3 +232,16 @@ def test_get_latest_run_files(tmpdir):
         main.File(newer_dir / "2.json", '{"id": 2}'),
         main.File(older_dir / "1.json", '{"id": 1}'),
     ]
+
+
+def test_get_record(workflow_run_template):
+    run = workflow_run_template | {
+        "id": 1,
+        "repository": {"name": "repo_1"},
+    }
+    file = main.File(pathlib.Path("test_dir/runs/1.json"), json.dumps(run))
+    record = main.get_record(file)
+
+    assert record._fields == main.Record._fields
+    assert record.id == 1
+    assert record.repo == "repo_1"
