@@ -118,6 +118,15 @@ def get_all_extracted_run_filepaths(workflows_dir, repo_name):
     )
 
 
+def get_latest_run_files(filepaths):
+    seen = set()
+    for filepath in filepaths:
+        if filepath.name in seen:
+            continue
+        seen.add(filepath.name)
+        yield File(filepath, filepath.read_text())
+
+
 def main():  # pragma: no cover
     session = SessionWithRetry(session=requests.Session())
     output_dir = pathlib.Path("data")
