@@ -11,6 +11,21 @@ File = collections.namedtuple("File", ["filepath", "content"])
 
 GITHUB_ORG = "alartest"
 
+Record = collections.namedtuple(
+    "Record",
+    [
+        "id",
+        "repo",
+        "name",
+        "head_sha",
+        "status",
+        "conclusion",
+        "created_at",
+        "updated_at",
+        "run_started_at",
+    ],
+)
+
 
 def write_file(content, filepath):
     filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -119,6 +134,21 @@ def get_latest_workflow_run_files(repo_dir):
             continue
         seen.add(filepath.name)
         yield File(filepath, filepath.read_text())
+
+
+def get_record(file):
+    run = json.loads(file.content)
+    return Record(
+        id=run["id"],
+        repo=run["repository"]["name"],
+        name=run["name"],
+        head_sha=run["head_sha"],
+        status=run["status"],
+        conclusion=run["conclusion"],
+        created_at=run["created_at"],
+        updated_at=run["updated_at"],
+        run_started_at=run["run_started_at"],
+    )
 
 
 def main():  # pragma: no cover
