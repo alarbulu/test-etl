@@ -1,3 +1,4 @@
+import csv
 import datetime
 import pathlib
 import requests
@@ -31,6 +32,15 @@ def write_file(text, filepath):
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with open(filepath, "w") as f:
         f.write(text)
+
+
+def write_csv(records, f_path):  # pragma: no cover
+    records = iter(records)
+    record_0 = next(records)
+    with f_path.open("w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows([record_0._fields, record_0])
+        writer.writerows(records)
 
 
 class SessionWithRetry:
