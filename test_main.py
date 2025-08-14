@@ -166,9 +166,6 @@ def test_extract():
     def mock_write(obj, f_path):
         mock_file_system[str(f_path)] = obj
 
-    def mock_now():
-        return datetime.datetime(2025, 1, 1)
-
     repos_page_1 = MockResponse([{"name": "repo_1"}], next_url="repos?page=2")
     repos_page_2 = MockResponse([{"name": "repo_2"}])
     repo_1_runs_page = MockResponse(
@@ -182,7 +179,7 @@ def test_extract():
         f"https://api.github.com/repos/{main.GITHUB_ORG}/repo_2/actions/runs": repo_2_runs_page,
     }
     output_dir = pathlib.Path("test_dir")
-    main.extract(session, output_dir, mock_write, now_function=mock_now)
+    main.extract(session, output_dir, datetime.datetime(2025, 1, 1), mock_write)
 
     assert mock_file_system == {
         "test_dir/repos/20250101-000000Z/pages/1.json": '[{"name": "repo_1"}]',

@@ -125,8 +125,8 @@ def get_run_files(workflow_runs, output_dir):
         yield File(output_dir / "runs" / f"{run['id']}.json", json.dumps(run))
 
 
-def extract(session, output_dir, write_function, now_function=datetime.datetime.now):
-    timestamp = now_function().strftime("%Y%m%d-%H%M%SZ")
+def extract(session, output_dir, datetime_, write_function):
+    timestamp = datetime_.strftime("%Y%m%d-%H%M%SZ")
     repo_pages, repo_names = get_repo_names(session)
     repo_files = get_page_files(repo_pages, output_dir / "repos" / timestamp)
 
@@ -175,8 +175,10 @@ def get_records(workflows_dir):
         )
 
 
-def main(session, output_dir):  # pragma: no cover
-    extract(SessionWithRetry(session), output_dir, write_file)  # writes to disk
+def main(session, output_dir, now_function=datetime.datetime.now):  # pragma: no cover
+    extract(
+        SessionWithRetry(session), output_dir, now_function(), write_file
+    )  # writes to disk
     records = get_records(output_dir)
     write_csv(records, output_dir / "workflow_runs.csv")
 
