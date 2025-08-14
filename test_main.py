@@ -212,25 +212,25 @@ def test_get_names_of_extracted_repos(tmpdir):
     assert list(extracted_repos) == ["repo_1", "repo_2"]
 
 
-def test_get_latest_run_files(tmpdir):
+def test_load_latest_workflow_runs(tmpdir):
     repo_dir = pathlib.Path(tmpdir) / "repo_1"
     older_dir = repo_dir / "20250101-000000Z" / "runs"
     older_dir.mkdir(parents=True)
     newer_dir = repo_dir / "20250102-000000Z" / "runs"
     newer_dir.mkdir(parents=True)
 
-    (older_dir / "1.json").write_text('{"id": 1}')
-    (older_dir / "2.json").write_text('{"id": 2}')
-    (newer_dir / "2.json").write_text('{"id": 2}')
-    (newer_dir / "3.json").write_text('{"id": 3}')
+    (older_dir / "1.json").write_text('{"id": 1,"status": "completed"}')
+    (older_dir / "2.json").write_text('{"id": 2, "status": "running"}')
+    (newer_dir / "2.json").write_text('{"id": 2, "status": "completed"}')
+    (newer_dir / "3.json").write_text('{"id": 3, "status": "running"}')
 
-    files = main.get_latest_workflow_run_files(repo_dir)
+    runs = main.load_latest_workflow_runs(repo_dir)
 
-    assert isinstance(files, types.GeneratorType)
-    assert list(files) == [
-        main.File(newer_dir / "3.json", '{"id": 3}'),
-        main.File(newer_dir / "2.json", '{"id": 2}'),
-        main.File(older_dir / "1.json", '{"id": 1}'),
+    assert isinstance(runs, types.GeneratorType)
+    assert list(runs) == [
+        {"id": 3, "status": "running"},
+        {"id": 2, "status": "completed"},
+        {"id": 1, "status": "completed"},
     ]
 
 
@@ -239,8 +239,7 @@ def test_get_record(workflow_run_template):
         "id": 1,
         "repository": {"name": "repo_1"},
     }
-    file = main.File(pathlib.Path("test_dir/runs/1.json"), json.dumps(run))
-    record = main.get_record(file)
+    record = main.get_record(run)
 
     assert record._fields == main.Record._fields
     assert record.id == 1

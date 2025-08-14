@@ -126,18 +126,17 @@ def get_names_of_extracted_repos(workflows_dir):
     return (repo.name for repo in workflows_dir.iterdir() if repo.is_dir())
 
 
-def get_latest_workflow_run_files(repo_dir):
+def load_latest_workflow_runs(repo_dir):
     filepaths = sorted(repo_dir.glob("*/runs/*.json"), reverse=True)
     seen = set()
     for filepath in filepaths:
         if filepath.name in seen:
             continue
         seen.add(filepath.name)
-        yield File(filepath, filepath.read_text())
+        yield json.loads(filepath.read_text())
 
 
-def get_record(file):
-    run = json.loads(file.content)
+def get_record(run):
     return Record(
         id=run["id"],
         repo=run["repository"]["name"],
