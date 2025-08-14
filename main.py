@@ -133,7 +133,8 @@ def load_latest_workflow_runs(repo_dir):
         if filepath.name in seen:
             continue
         seen.add(filepath.name)
-        yield json.loads(filepath.read_text())
+        with filepath.open() as f:
+            yield json.load(f)
 
 
 def get_record(run):
