@@ -234,13 +234,29 @@ def test_load_latest_workflow_runs(tmpdir):
     ]
 
 
-def test_get_record(workflow_run_template):
-    run = workflow_run_template | {
-        "id": 1,
-        "repository": {"name": "repo_1"},
-    }
-    record = main.get_record(run)
+def test_get_records(tmpdir, workflow_run_template):
+    workflows_dir = pathlib.Path(tmpdir)
+    repo_1_dir = workflows_dir / "repo_1" / "20250101-000000Z" / "runs"
+    repo_2_dir = workflows_dir / "repo_2" / "20250101-000000Z" / "runs"
+    repo_1_dir.mkdir(parents=True)
+    repo_2_dir.mkdir(parents=True)
 
-    assert record._fields == main.Record._fields
-    assert record.id == 1
-    assert record.repo == "repo_1"
+    repo_1_run_1 = workflow_run_template | {"id": 1, "repository": {"name": "repo_1"}}
+    (repo_1_dir / "1.json").write_text(json.dumps(repo_1_run_1))
+    repo_1_run_2 = workflow_run_template | {"id": 2, "repository": {"name": "repo_1"}}
+    (repo_1_dir / "2.json").write_text(json.dumps(repo_1_run_2))
+
+    repo_2_run_3 = workflow_run_template | {"id": 3, "repository": {"name": "repo_2"}}
+    (repo_2_dir / "3.json").write_text(json.dumps(repo_2_run_3))
+
+    records = main.get_records(workflows_dir)
+    record_1, record_2, record_3 = sorted(records, key=lambda r: r.id)
+
+    assert isinstance(records, types.GeneratorType)
+    assert record_1._fields == main.Record._fields
+    assert record_1.id == 1
+    assert record_1.repo == "repo_1"
+    assert record_2.id == 2
+    assert record_2.repo == "repo_1"
+    assert record_3.id == 3
+    assert record_3.repo == "repo_2"
