@@ -231,3 +231,28 @@ def test_get_all_extracted_run_filepaths(tmpdir):
         workflows_dir / "repo_1" / "20250101-000000Z" / "runs" / "2.json",
         workflows_dir / "repo_1" / "20250101-000000Z" / "runs" / "1.json",
     ]
+
+
+def test_get_latest_run_files():
+    repo_dir = pathlib.Path("repo_1")
+    filepaths = sorted(
+        [
+            repo_dir / "20250101-000000Z" / "runs" / "1.json",
+            repo_dir / "20250101-000000Z" / "runs" / "2.json",
+            repo_dir / "20250102-000000Z" / "runs" / "2.json",
+            repo_dir / "20250102-000000Z" / "runs" / "3.json",
+        ],
+        reverse=True,
+    )
+    for filepath in filepaths:
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        filepath.write_text("{}")
+
+    files = main.get_latest_run_files(filepaths)
+
+    assert isinstance(files, types.GeneratorType)
+    assert list(files) == [
+        main.File(repo_dir / "20250102-000000Z" / "runs" / "3.json", "{}"),
+        main.File(repo_dir / "20250102-000000Z" / "runs" / "2.json", "{}"),
+        main.File(repo_dir / "20250101-000000Z" / "runs" / "1.json", "{}"),
+    ]
