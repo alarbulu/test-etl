@@ -9,25 +9,6 @@ import time
 
 import collections
 
-File = collections.namedtuple("File", ["filepath", "text"])
-
-GITHUB_ORG = "alartest"
-
-Record = collections.namedtuple(
-    "Record",
-    [
-        "id",
-        "repo",
-        "name",
-        "head_sha",
-        "status",
-        "conclusion",
-        "created_at",
-        "updated_at",
-        "run_started_at",
-    ],
-)
-
 
 def write_file(text, filepath):
     filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -42,6 +23,25 @@ def write_csv(records, f_path):  # pragma: no cover
         writer = csv.writer(f)
         writer.writerows([record_0._fields, record_0])
         writer.writerows(records)
+
+
+GITHUB_ORG = "alartest"
+
+File = collections.namedtuple("File", ["filepath", "text"])
+Record = collections.namedtuple(
+    "Record",
+    [
+        "id",
+        "repo",
+        "name",
+        "head_sha",
+        "status",
+        "conclusion",
+        "created_at",
+        "updated_at",
+        "run_started_at",
+    ],
+)
 
 
 class GitHubAPISession(requests.Session):
