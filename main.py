@@ -137,18 +137,23 @@ def load_latest_workflow_runs(repo_dir):
             yield json.load(f)
 
 
-def get_record(run):
-    return Record(
-        id=run["id"],
-        repo=run["repository"]["name"],
-        name=run["name"],
-        head_sha=run["head_sha"],
-        status=run["status"],
-        conclusion=run["conclusion"],
-        created_at=run["created_at"],
-        updated_at=run["updated_at"],
-        run_started_at=run["run_started_at"],
+def get_records(workflows_dir):
+    repos = get_names_of_extracted_repos(workflows_dir)
+    workflow_runs = (
+        run for repo in repos for run in load_latest_workflow_runs(workflows_dir / repo)
     )
+    for run in workflow_runs:
+        yield Record(
+            id=run["id"],
+            repo=run["repository"]["name"],
+            name=run["name"],
+            head_sha=run["head_sha"],
+            status=run["status"],
+            conclusion=run["conclusion"],
+            created_at=run["created_at"],
+            updated_at=run["updated_at"],
+            run_started_at=run["run_started_at"],
+        )
 
 
 def main():  # pragma: no cover
