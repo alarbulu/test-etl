@@ -265,3 +265,52 @@ def test_get_records(tmpdir):
     assert record_2.repo == "repo_1"
     assert record_3.id == 3
     assert record_3.repo == "repo_2"
+
+
+def test_main(tmpdir):
+    output_dir = pathlib.Path(tmpdir)
+
+    def mock_now():
+        return datetime.datetime(2025, 1, 1)
+
+    run = {
+        "id": 1,
+        "name": "My Workflow",
+        "head_sha": 12345678,
+        "status": "pending",
+        "conclusion": None,
+        "created_at": "2025-01-01T00:00:00Z",
+        "updated_at": "2025-01-01T00:00:00Z",
+        "run_started_at": "2025-01-01T00:00:00Z",
+        "repository": {"name": "test_repo"},
+    }
+
+    repos_page = MockResponse([{"name": "test_repo"}])
+    repo_1_runs_page = MockResponse({"total_count": 1, "workflow_runs": [run]})
+
+    session = {
+        f"https://api.github.com/orgs/{main.GITHUB_ORG}/repos": repos_page,
+        f"https://api.github.com/repos/{main.GITHUB_ORG}/test_repo/actions/runs": repo_1_runs_page,
+    }
+
+    main.main(session, output_dir, now_function=mock_now)
+
+    with open(output_dir / "repos" / "20250101-000000Z" / "pages" / "1.json") as f:
+        repo_page = json.load(f)
+
+    with open(output_dir / "test_repo" / "20250101-000000Z" / "pages" / "1.json") as f:
+        run_page = json.load(f)
+
+    with open(output_dir / "test_repo" / "20250101-000000Z" / "runs" / "1.json") as f:
+        run_file = json.load(f)
+
+    with open(output_dir / "workflow_runs.csv") as f:
+        csv_content = f.read()
+
+    assert repo_page == [{"name": "test_repo"}]
+    assert run_page == {"total_count": 1, "workflow_runs": [run]}
+    assert run_file == run
+    assert csv_content == (
+        "id,repo,name,head_sha,status,conclusion,created_at,updated_at,run_started_at\n"
+        "1,test_repo,My Workflow,12345678,pending,,2025-01-01T00:00:00Z,2025-01-01T00:00:00Z,2025-01-01T00:00:00Z\n"
+    )
