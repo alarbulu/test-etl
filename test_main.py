@@ -37,6 +37,7 @@ def test_github_api_session_init(monkeypatch):
     monkeypatch.setenv("GITHUB_WORKFLOW_RUNS_TOKEN", "test_token")
     session = main.GitHubAPISession()
     assert session.headers["Authorization"] == "Bearer test_token"
+    assert session.params == {"per_page": 100, "format": "json"}
 
 
 def test_session_with_retry_when_successful(capsys):

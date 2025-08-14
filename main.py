@@ -49,6 +49,7 @@ class GitHubAPISession(requests.Session):
         super().__init__()
         token = os.environ["GITHUB_WORKFLOW_RUNS_TOKEN"]
         self.headers.update({"Authorization": f"Bearer {token}"})
+        self.params.update({"per_page": 100, "format": "json"})
 
 
 class SessionWithRetry:
