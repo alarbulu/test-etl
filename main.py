@@ -175,14 +175,12 @@ def get_records(workflows_dir):
         )
 
 
-def main():  # pragma: no cover
-    session = SessionWithRetry(session=requests.Session())
-    output_dir = pathlib.Path("data")
-
-    extract(session, output_dir, write_file)  # writes to disk
+def main(session, output_dir):  # pragma: no cover
+    extract(SessionWithRetry(session), output_dir, write_file)  # writes to disk
     records = get_records(output_dir)
     write_csv(records, output_dir / "workflow_runs.csv")
 
 
 if __name__ == "__main__":
-    main()
+    output_dir = pathlib.Path("data")
+    main(GitHubAPISession(), output_dir)
