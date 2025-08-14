@@ -212,47 +212,27 @@ def test_get_names_of_extracted_repos(tmpdir):
     assert list(extracted_repos) == ["repo_1", "repo_2"]
 
 
-def test_get_all_extracted_run_filepaths(tmpdir):
+def test_get_latest_run_files(tmpdir):
     workflows_dir = pathlib.Path(tmpdir)
     timestamp_dir_1 = workflows_dir / "repo_1" / "20250101-000000Z" / "runs"
     (timestamp_dir_1).mkdir(parents=True)
-    (timestamp_dir_1 / "1.json").touch()
-    (timestamp_dir_1 / "2.json").touch()
+    (timestamp_dir_1 / "1.json").write_text("{}")
+    (timestamp_dir_1 / "2.json").write_text("{}")
     timestamp_dir_2 = workflows_dir / "repo_1" / "20250102-000000Z" / "runs"
     (timestamp_dir_2).mkdir(parents=True)
-    (timestamp_dir_2 / "1.json").touch()
-    (timestamp_dir_2 / "2.json").touch()
+    (timestamp_dir_2 / "2.json").write_text("{}")
+    (timestamp_dir_2 / "3.json").write_text("{}")
 
-    run_files = main.get_all_extracted_run_filepaths(workflows_dir, "repo_1")
-
-    assert run_files == [
-        workflows_dir / "repo_1" / "20250102-000000Z" / "runs" / "2.json",
-        workflows_dir / "repo_1" / "20250102-000000Z" / "runs" / "1.json",
-        workflows_dir / "repo_1" / "20250101-000000Z" / "runs" / "2.json",
-        workflows_dir / "repo_1" / "20250101-000000Z" / "runs" / "1.json",
-    ]
-
-
-def test_get_latest_run_files(tmpdir):
-    repo_dir = pathlib.Path(tmpdir) / "repo_1"
-    filepaths = sorted(
-        [
-            repo_dir / "20250101-000000Z" / "runs" / "1.json",
-            repo_dir / "20250101-000000Z" / "runs" / "2.json",
-            repo_dir / "20250102-000000Z" / "runs" / "2.json",
-            repo_dir / "20250102-000000Z" / "runs" / "3.json",
-        ],
-        reverse=True,
-    )
-    for filepath in filepaths:
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-        filepath.write_text("{}")
-
-    files = main.get_latest_run_files(filepaths)
-
+    files = main.get_latest_run_files(workflows_dir, "repo_1")
     assert isinstance(files, types.GeneratorType)
     assert list(files) == [
-        main.File(repo_dir / "20250102-000000Z" / "runs" / "3.json", "{}"),
-        main.File(repo_dir / "20250102-000000Z" / "runs" / "2.json", "{}"),
-        main.File(repo_dir / "20250101-000000Z" / "runs" / "1.json", "{}"),
+        main.File(
+            workflows_dir / "repo_1" / "20250102-000000Z" / "runs" / "3.json", "{}"
+        ),
+        main.File(
+            workflows_dir / "repo_1" / "20250102-000000Z" / "runs" / "2.json", "{}"
+        ),
+        main.File(
+            workflows_dir / "repo_1" / "20250101-000000Z" / "runs" / "1.json", "{}"
+        ),
     ]
