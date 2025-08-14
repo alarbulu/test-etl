@@ -111,11 +111,8 @@ def get_names_of_extracted_repos(workflows_dir):
     return (repo.name for repo in workflows_dir.iterdir() if repo.is_dir())
 
 
-def get_latest_run_files(workflows_dir, repo_name):
-    filepaths = sorted(
-        [filepath for filepath in (workflows_dir / repo_name).glob("*/runs/*.json")],
-        reverse=True,
-    )
+def get_latest_workflow_run_files(repo_dir):
+    filepaths = sorted(list(repo_dir.glob("*/runs/*.json")), reverse=True)
     seen = set()
     for filepath in filepaths:
         if filepath.name in seen:

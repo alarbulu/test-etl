@@ -213,10 +213,10 @@ def test_get_names_of_extracted_repos(tmpdir):
 
 
 def test_get_latest_run_files(tmpdir):
-    workflows_dir = pathlib.Path(tmpdir)
-    older_dir = workflows_dir / "repo_1" / "20250101-000000Z" / "runs"
+    repo_dir = pathlib.Path(tmpdir) / "repo_1"
+    older_dir = repo_dir / "20250101-000000Z" / "runs"
     older_dir.mkdir(parents=True)
-    newer_dir = workflows_dir / "repo_1" / "20250102-000000Z" / "runs"
+    newer_dir = repo_dir / "20250102-000000Z" / "runs"
     newer_dir.mkdir(parents=True)
 
     (older_dir / "1.json").write_text("{}")
@@ -224,7 +224,7 @@ def test_get_latest_run_files(tmpdir):
     (newer_dir / "2.json").write_text("{}")
     (newer_dir / "3.json").write_text("{}")
 
-    files = main.get_latest_run_files(workflows_dir, "repo_1")
+    files = main.get_latest_workflow_run_files(repo_dir)
 
     assert isinstance(files, types.GeneratorType)
     assert list(files) == [
