@@ -11,7 +11,6 @@ class GitHubAPISession(requests.Session):
         super().__init__()
         token = self._get_token()
         self.headers.update({"Authorization": f"Bearer {token}"})
-        self.params.update({"per_page": 100, "format": "json"})
 
     def _get_token(self):
         try:
