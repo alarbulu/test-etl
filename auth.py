@@ -1,8 +1,8 @@
 import collections
+import datetime
 import os
 import time
-import datetime
-from urllib.parse import parse_qs
+import urllib.parse
 
 import requests
 
@@ -71,7 +71,7 @@ class GitHubAppAuthentication:
             },
         )
         response.raise_for_status()
-        response_data = parse_qs(response.text)
+        response_data = urllib.parse.parse_qs(response.text)
         return self.LoginResponse(
             device_code=response_data["device_code"][0],
             user_code=response_data["user_code"][0],
@@ -106,7 +106,7 @@ class GitHubAppAuthentication:
         while time.time() < timeout_time:
             response = self.post_oauth_request(login.device_code)
             if response.status_code == 200:
-                qs = parse_qs(response.text)
+                qs = urllib.parse.parse_qs(response.text)
                 access_token = qs["access_token"][0]
                 expires_in = int(qs["expires_in"][0])
                 return (
