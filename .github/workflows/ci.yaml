@@ -24,5 +24,14 @@ jobs:
           cache-dependency-path: "requirements.*.txt"
           install-just: true
 
+      - uses: actions/create-github-app-token@v2
+        id: read-actions-app-token
+        with:
+          owner: alartest
+          app-id: ${{ vars.READ_ACTIONS_APP_ID }}
+          private-key: ${{ secrets.READ_ACTIONS_APP_PRIVATE_KEY }}
+
       - name: Run ETL for workflow runs
+        env:
+          GITHUB_WORKFLOW_RUNS_TOKEN: ${{ steps.read-actions-app-token.outputs.token }}
         run: just run
