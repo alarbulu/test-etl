@@ -58,6 +58,8 @@ lock *args: (_uv "lock" args)
 
 devenv: _env lock (_uv "sync --frozen") && install-precommit
 
+prodenv: _env lock (_uv "sync --frozen --no-dev")
+
 install-precommit:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -82,8 +84,6 @@ fix: devenv
 test *args: devenv
     PYTHONPATH={{ justfile_directory() }}/app {{ BIN }}/coverage run --source {{ justfile_directory() }} --module pytest {{ args }}
     {{ BIN }}/coverage report || {{ BIN }}/coverage html
-
-
 
 update-dependencies date="": virtualenv
     #!/usr/bin/env bash

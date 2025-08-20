@@ -16,3 +16,17 @@ dev = [
     "pre-commit>=4.2.0",
     "ruff>=0.12.7",
 ]
+
+[tool.ruff.lint]
+extend-select = [
+    "A", # flake8-builtins
+    "I", # isort
+    "ICN002", # flake8-import-conventions.banned-aliases
+]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.ruff.lint.flake8-import-conventions.banned-aliases]
+"altair" = ["alt"]
+"pandas" = ["pd"]
