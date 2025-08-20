@@ -4,6 +4,7 @@ import datetime
 import itertools
 import json
 import pathlib
+import shutil
 import time
 
 from auth import GitHubAPISession
@@ -177,7 +178,14 @@ def main(session, workflows_dir, now_function=datetime.datetime.now):
 
 
 if __name__ == "__main__":
+    DATA_DIR = pathlib.Path("data")
+    if DATA_DIR.exists():
+        # In development using test org so just clear every time
+        shutil.rmtree(DATA_DIR)
+
     with GitHubAPISession() as session:
         session.params.update({"per_page": 100, "format": "json"})
-        main(session, pathlib.Path("data"))
-    assert False
+        main(session, DATA_DIR)
+
+    for repo_name in ["dd-workshop", "opensafely-getting-started"]:
+        assert pathlib.Path(DATA_DIR / repo_name).exists(), f"{repo_name} not found."
