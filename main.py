@@ -187,9 +187,10 @@ if __name__ == "__main__":
         session.params.update({"per_page": 100, "format": "json"})
         main(session, DATA_DIR)
 
-    for repo_name in [
-        "dd-workshop",
-        "opensafely-getting-started",
-        "case-control-example",
-    ]:
+    for repo_name in ["dd-workshop", "opensafely-getting-started"]:
         assert pathlib.Path(DATA_DIR / repo_name).exists(), f"{repo_name} not found."
+
+    for repo_name in ["case-control-example"]:
+        assert not pathlib.Path(DATA_DIR / repo_name).exists(), (
+            f"{repo_name} should not be accessible."
+        )
