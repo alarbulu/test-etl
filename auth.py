@@ -10,13 +10,15 @@ import requests
 class GitHubAPISession(requests.Session):
     def __init__(self, token=None):
         super().__init__()
-        token = self.get_token()
-        self.headers.update({"Authorization": f"Bearer {token}"})
+        if token := self.get_token():
+            self.headers.update({"Authorization": f"Bearer {token}"})
 
     def get_token(self):
         token = os.environ.get("GITHUB_WORKFLOW_RUNS_TOKEN")
         expiry = os.environ.get("GITHUB_WORKFLOW_RUNS_TOKEN_EXPIRY")
-        if token and not expiry:
+        if not token:
+            return None
+        elif token and not expiry:
             # This is a PAT provided by the user.
             return token
         elif (
