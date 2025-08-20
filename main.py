@@ -186,4 +186,5 @@ def main(session, workflows_dir, now_function=datetime.datetime.now):
 
 
 if __name__ == "__main__":
-    main(GitHubAPISession(), pathlib.Path("data"))
+    with GitHubAPISession() as session:
+        main(session, pathlib.Path("data"))
