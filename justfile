@@ -85,6 +85,9 @@ test *args: devenv
     PYTHONPATH={{ justfile_directory() }}/app {{ BIN }}/coverage run --source {{ justfile_directory() }} --module pytest {{ args }}
     {{ BIN }}/coverage report || {{ BIN }}/coverage html
 
+run: prodenv
+    $BIN/python main.py
+
 update-dependencies date="": virtualenv
     #!/usr/bin/env bash
     set -euo pipefail
