@@ -180,3 +180,4 @@ if __name__ == "__main__":
     with GitHubAPISession() as session:
         session.params.update({"per_page": 100, "format": "json"})
         main(session, pathlib.Path("data"))
+    assert False
