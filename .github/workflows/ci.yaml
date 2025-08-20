@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - aw/github-app-auth
+  workflow_dispatch:
+
+jobs:
+  workflows_etl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv # 6.5.0
+        uses: astral-sh/setup-uv@d9e0f98d3fc6adb07d1e3d37f3043649ddad06a1
+
+      - uses: "opensafely-core/setup-action@v1"
+        with:
+          cache: null
+          python-version: "3.13"
+          cache-dependency-path: "requirements.*.txt"
+          install-just: true
+
+      - name: Run ETL for workflow runs
+        run: just run
