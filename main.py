@@ -103,6 +103,7 @@ def _extract_workflow_runs_from_pages(workflow_runs_pages):
 
 def get_repo_workflow_runs(repo_name, session):
     url = f"https://api.github.com/repos/{GITHUB_ORG}/{repo_name}/actions/runs"
+    print(f"Fetched {url}")
     pages_1, pages_2 = itertools.tee(get_pages(session, url))
     return pages_1, _extract_workflow_runs_from_pages(pages_2)
 
