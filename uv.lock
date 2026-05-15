@@ -2,9 +2,6 @@ version = 1
 revision = 3
 requires-python = ">=3.13"
 
-[options]
-exclude-newer = "2025-08-01T23:00:00Z"
-
 [[package]]
 name = "certifi"
 version = "2025.7.14"
@@ -327,16 +324,16 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "coverage", specifier = ">=7.10.1" },
-    { name = "pytest", specifier = ">=8.4.1" },
-    { name = "requests", specifier = ">=2.32.4" },
+    { name = "coverage", specifier = "<=7.10.1" },
+    { name = "pytest", specifier = "<=8.4.1" },
+    { name = "requests", specifier = "<=2.32.4" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pdbpp", specifier = ">=0.11.7" },
-    { name = "pre-commit", specifier = ">=4.2.0" },
-    { name = "ruff", specifier = ">=0.12.7" },
+    { name = "pdbpp", specifier = "<=0.11.7" },
+    { name = "pre-commit", specifier = "<=4.2.0" },
+    { name = "ruff", specifier = "<=0.12.7" },
 ]
 
 [[package]]
