@@ -34,9 +34,11 @@
       ":information_source: Before reviewing this PR, merge any prod/dev dependency PRs and rebase."
     ]
   },
-  // don't auto-update python-version, we want to manage python updates ourselves
   "ignorePaths": [
-    ".python-version"
+    // don't auto-update python-version, we want to manage python updates ourselves
+    ".python-version",
+    // don't use the uvmirror file as a basis for creating PRs
+    "requirements.uvmirror.txt"
   ],
   // Note package rules apply only to direct dependencies
   // group dependencies by dev/prod, cooldown 7 days, run early Wed mornings
