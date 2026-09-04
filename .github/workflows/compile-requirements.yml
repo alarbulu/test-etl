@@ -1,0 +1,21 @@
+name: Compile requirements
+
+on:
+  push
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  update-python-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: opensafely-core/setup-action@d9171097dd0d37bdb7bed58f701eb03ff317ed17 # v1.7.0
+        with:
+          python-version: "3.10"
+          install-just: true
+      - name: Compile requirements
+        run: just requirements
