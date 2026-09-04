@@ -18,6 +18,7 @@ virtualenv:
     # ensure we have pip-tools so we can run pip-compile
     # Temporarily pin pip-tools; see #614.
     test -e $BIN/pip-compile || $PIP install pip-tools==7.5.1
+    echo $($PIP --version)
     echo $($BIN/pip-compile --version)
 
 
